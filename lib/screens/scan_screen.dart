@@ -31,6 +31,19 @@ class _ScanScreenState extends State<ScanScreen> {
   String _errorMessage = '';
   String _nfcMessage = '';
 
+  String _canonicalize(String s) {
+    return s.trim().toLowerCase().replaceAll(RegExp(r'\s+'), '');
+  }
+
+  String _assetAudioEn(String key) => 'assets/audio/en/$key.mp3';
+  String _assetAudioVn(String key) => 'assets/audio/vn/$key.mp3';
+  String _assetImage(String key) => 'assets/images/$key.jpg';
+
+  String _ensureAssetPrefix(String path) {
+    if (path.startsWith('http')) return path;
+    return path.startsWith('assets/') ? path : 'assets/$path';
+  }
+ 
   @override
   void initState() {
     super.initState();
@@ -55,13 +68,20 @@ class _ScanScreenState extends State<ScanScreen> {
 
     try {
       // Tạo WordData mới từ response API
+      final enRaw = (result['english'] as String?) ?? '';
+      final vnRaw = (result['vietnamese'] as String?) ?? '';
+      final imgRaw = (result['image'] as String?) ?? '';
+      final enAudioRaw = (result['englishAudio'] as String?) ?? '';
+      final vnAudioRaw = (result['vietnameseAudio'] as String?) ?? '';
+      final canonical = _canonicalize(enRaw);
+
       final detectedWord = WordData(
         id: 0, // ID tạm thời
-        en: result['english'] as String,
-        vn: result['vietnamese'] as String,
-        image: result['image'] as String,
-        audioEn: result['englishAudio'] as String,
-        audioVn: result['vietnameseAudio'] as String,
+        en: enRaw,
+        vn: vnRaw,
+        image: imgRaw.isNotEmpty ? _ensureAssetPrefix(imgRaw) : _assetImage(canonical),
+        audioEn: enAudioRaw.isNotEmpty ? _ensureAssetPrefix(enAudioRaw) : _assetAudioEn(canonical),
+        audioVn: vnAudioRaw.isNotEmpty ? _ensureAssetPrefix(vnAudioRaw) : _assetAudioVn(canonical),
       );
 
       setState(() {
@@ -181,17 +201,21 @@ class _ScanScreenState extends State<ScanScreen> {
               return;
             }
 
-            // Tìm từ trong database theo tên tiếng Anh
-            String englishWord = parsedData['EN']!;
+            // Tìm từ trong database theo tên tiếng Anh (chuẩn hóa: loại khoảng trắng, chữ thường)
+            String englishWordRaw = parsedData['EN']!;
+            String englishWordCanonical = _canonicalize(englishWordRaw);
+
             WordData? foundWord = wordList.firstWhere(
-              (word) => word.en?.toLowerCase() == englishWord.toLowerCase(),
+              (word) => _canonicalize(word.en ?? '') == englishWordCanonical,
               orElse: () => WordData(
                 id: 0,
                 en: parsedData['EN'],
                 vn: parsedData['VN'] ?? 'Không có dịch',
-                image: parsedData['IMG'] ?? '',
-                audioEn: '',
-                audioVn: '',
+                image: (parsedData['IMG'] ?? '').isNotEmpty
+                    ? _ensureAssetPrefix(parsedData['IMG']!)
+                    : _assetImage(englishWordCanonical),
+                audioEn: _assetAudioEn(englishWordCanonical),
+                audioVn: _assetAudioVn(englishWordCanonical),
               ),
             );
 
@@ -246,7 +270,7 @@ class _ScanScreenState extends State<ScanScreen> {
 
       try {
         var request = http.MultipartRequest('POST',
-            Uri.parse('https://05ca-35-227-97-23.ngrok-free.app/predict'));
+            Uri.parse('https://unmouthable-mitzi-overdiffusely.ngrok-free.dev/predict'));
 
         if (kIsWeb) {
           final bytes = await pickedFile.readAsBytes();

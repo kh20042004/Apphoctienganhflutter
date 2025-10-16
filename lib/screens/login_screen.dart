@@ -22,6 +22,7 @@ class _LoginScreenState extends State<LoginScreen> {
   
   // Biến trạng thái
   bool _isLoading = false;
+  bool _isGoogleLoading = false;
   bool _obscurePassword = true;
 
   @override
@@ -84,6 +85,41 @@ class _LoginScreenState extends State<LoginScreen> {
       if (mounted) {
         setState(() {
           _isLoading = false;
+        });
+      }
+    }
+  }
+
+  /// Đăng nhập bằng Google
+  Future<void> _handleGoogleLogin() async {
+    if (_isGoogleLoading) return;
+
+    setState(() {
+      _isGoogleLoading = true;
+    });
+
+    try {
+      final result = await Auth.signInWithGoogle();
+
+      if (!mounted) return;
+
+      if (result['success'] == true) {
+        _showMessage(result['message'] ?? 'Đăng nhập Google thành công!');
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const MainScreen()),
+        );
+      } else {
+        _showMessage(result['message'] ?? 'Đăng nhập Google thất bại!', isError: true);
+      }
+    } catch (e) {
+      if (mounted) {
+        _showMessage('Đã xảy ra lỗi: $e', isError: true);
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isGoogleLoading = false;
         });
       }
     }
@@ -321,6 +357,44 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 20),
                   
+                  // Nút đăng nhập Google
+                  SizedBox(
+                    height: 55,
+                    child: OutlinedButton.icon(
+                      onPressed: _isGoogleLoading ? null : _handleGoogleLogin,
+                      icon: const Icon(
+                        Icons.g_mobiledata,
+                        color: Colors.red,
+                      ),
+                      label: _isGoogleLoading
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(Colors.red),
+                              ),
+                            )
+                          : const Text(
+                              'Đăng nhập với Google',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.red,
+                              ),
+                            ),
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: Colors.red),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 0,
+                        backgroundColor: Colors.white,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
                   // Chuyển sang đăng ký
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,

@@ -12,6 +12,11 @@ class Auth {
     return await _authAPI.login(email, password);
   }
 
+  /// Đăng nhập bằng Google
+  static Future<Map<String, dynamic>> signInWithGoogle() async {
+    return await _authAPI.signInWithGoogle();
+  }
+
   /// Đăng ký
   /// Trả về Map với 'success' (bool) và 'message' (String)
   static Future<Map<String, dynamic>> register({

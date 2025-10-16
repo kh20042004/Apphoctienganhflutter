@@ -3,6 +3,7 @@ import 'package:mongo_dart/mongo_dart.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import '../Models/User.dart';
 import '../utils/email_service.dart';
 
@@ -224,6 +225,15 @@ class AuthAPI {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(tokenKey);
     await prefs.remove(userKey);
+
+    // Đăng xuất khỏi Google nếu đang đăng nhập Google để có thể chọn tài khoản khác lần sau
+    try {
+      final googleSignIn = GoogleSignIn();
+      await googleSignIn.signOut();
+      await googleSignIn.disconnect();
+    } catch (e) {
+      debugPrint('Google signOut error: $e');
+    }
   }
 
   /// Đóng kết nối MongoDB khi không sử dụng
@@ -371,6 +381,95 @@ class AuthAPI {
       return {
         'success': false,
         'message': 'Lỗi khi đổi mật khẩu: ${e.toString()}',
+      };
+    }
+  }
+
+  // ==================== ĐĂNG NHẬP GOOGLE ====================
+  Future<Map<String, dynamic>> signInWithGoogle() async {
+    try {
+      // Khởi tạo Google Sign-In
+      final GoogleSignIn googleSignIn = GoogleSignIn(
+        scopes: ['email'],
+      );
+
+      // Đảm bảo không giữ phiên Google trước đó để hiển thị hộp chọn tài khoản
+      try {
+        await googleSignIn.signOut();
+        await googleSignIn.disconnect();
+      } catch (_) {}
+
+      // Bắt đầu quy trình đăng nhập
+      final GoogleSignInAccount? account = await googleSignIn.signIn();
+
+      if (account == null) {
+        // User hủy đăng nhập
+        return {
+          'success': false,
+          'message': 'Đăng nhập Google đã bị hủy!',
+        };
+      }
+
+      // Kết nối MongoDB
+      await _initMongoDB();
+      if (_userCollection == null) {
+        throw Exception('User collection not initialized');
+      }
+
+      // Tìm user theo email
+      var userDoc = await _userCollection!.findOne(where.eq('email', account.email));
+
+      // Nếu chưa có, tạo mới user với provider = google
+      if (userDoc == null) {
+        final userId = ObjectId();
+        final username = (account.email.split('@').first);
+
+        final newUser = {
+          '_id': userId,
+          'username': username,
+          'email': account.email,
+          if (account.displayName != null) 'fullName': account.displayName,
+          'provider': 'google',
+          'googleId': account.id,
+          'createdAt': DateTime.now().toIso8601String(),
+        };
+
+        await _userCollection!.insert(newUser);
+        userDoc = newUser;
+      }
+
+      // Tạo token và lưu
+      final userIdHex = userDoc['_id'] is ObjectId
+          ? (userDoc['_id'] as ObjectId).toHexString()
+          : userDoc['_id'].toString();
+
+      final token = _generateToken(userIdHex);
+      await _saveToken(token);
+
+      // Tạo User object và lưu
+      final user = User(
+        id: userIdHex,
+        username: userDoc['username'],
+        email: userDoc['email'],
+        fullName: userDoc['fullName'],
+        createdAt: userDoc['createdAt'] != null
+            ? DateTime.parse(userDoc['createdAt'])
+            : null,
+      );
+
+      await _saveUserData(user);
+
+      return {
+        'success': true,
+        'message': 'Đăng nhập Google thành công!',
+        'user': user,
+        'token': token,
+      };
+    } catch (e) {
+      debugPrint('Error in signInWithGoogle: $e');
+      return {
+        'success': false,
+        'message': 'Lỗi khi đăng nhập Google: ${e.toString()}',
       };
     }
   }

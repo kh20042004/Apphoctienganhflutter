@@ -30,6 +30,32 @@ class WordDisplay extends StatelessWidget {
     );
   }
 
+  // Map nhãn hiển thị (Title Case), xử lý trường hợp "water melon" → "Watermelon"
+  static const Map<String, String> _labels = {
+    'apple': 'Apple',
+    'banana': 'Banana',
+    'grape': 'Grape',
+    'guava': 'Guava',
+    'mango': 'Mango',
+    'orange': 'Orange',
+    'water melon': 'Watermelon',
+    'watermelon': 'Watermelon',
+  };
+
+  String _toTitleCase(String input) {
+    return input
+        .trim()
+        .split(RegExp(r'\s+'))
+        .map((w) => w.isEmpty ? w : (w[0].toUpperCase() + w.substring(1).toLowerCase()))
+        .join(' ');
+  }
+
+  String _displayEnglish(String? en) {
+    final raw = en ?? '';
+    final key = raw.trim().toLowerCase();
+    return _labels[key] ?? _toTitleCase(raw);
+  }
+
   Widget _buildWordRow(String text, bool isEnglish) {
     return Container(
       width: double.infinity,
@@ -84,7 +110,7 @@ class WordDisplay extends StatelessWidget {
             child: _buildImageWidget(word.image!),
           ),
           const SizedBox(height: 16),
-          _buildWordRow(word.en!, true),
+          _buildWordRow(_displayEnglish(word.en!), true),
           _buildWordRow(word.vn!, false),
         ],
       ),

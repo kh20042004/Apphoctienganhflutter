@@ -23,6 +23,7 @@ dependencies:
   mongo_dart: ^0.10.0
   crypto: ^3.0.3
   mailer: ^6.0.1
+  google_sign_in: ^6.2.1
 
 dependency_overrides:
   js: "^0.6.4"
@@ -36,29 +37,29 @@ flutter:
   uses-material-design: true
 
   assets:
-    # Image files
+    # Image files (7 fruits)
     - assets/images/apple.jpg
     - assets/images/banana.jpg
     - assets/images/grape.jpg
+    - assets/images/guava.jpg
+    - assets/images/mango.jpg
     - assets/images/orange.jpg
-    - assets/images/pear.jpg
-    - assets/images/pineapple.jpg
     - assets/images/watermelon.jpg
     
-    # Audio files - English
+    # Audio files - English (7 fruits)
     - assets/audio/en/apple.mp3
     - assets/audio/en/banana.mp3
     - assets/audio/en/grape.mp3
+    - assets/audio/en/guava.mp3
+    - assets/audio/en/mango.mp3
     - assets/audio/en/orange.mp3
-    - assets/audio/en/pear.mp3
-    - assets/audio/en/pineapple.mp3
     - assets/audio/en/watermelon.mp3
     
-    # Audio files - Vietnamese
+    # Audio files - Vietnamese (7 fruits)
     - assets/audio/vn/apple.mp3
     - assets/audio/vn/banana.mp3
     - assets/audio/vn/grape.mp3
+    - assets/audio/vn/guava.mp3
+    - assets/audio/vn/mango.mp3
     - assets/audio/vn/orange.mp3
-    - assets/audio/vn/pear.mp3
-    - assets/audio/vn/pineapple.mp3
     - assets/audio/vn/watermelon.mp3

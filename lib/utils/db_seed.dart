@@ -42,19 +42,19 @@ Future<void> seedDatabase() async {
     },
     {
       "id": 5,
-      "en": "pear",
-      "vn": "quả lê",
-      "audioEn": "assets/audio/en/pear.mp3",
-      "audioVn": "assets/audio/vn/pear.mp3",
-      "image": "assets/images/pear.jpg"
+      "en": "guava",
+      "vn": "quả ổi",
+      "audioEn": "assets/audio/en/guava.mp3",
+      "audioVn": "assets/audio/vn/guava.mp3",
+      "image": "assets/images/guava.jpg"
     },
     {
       "id": 6,
-      "en": "pineapple",
-      "vn": "quả thơm",
-      "audioEn": "assets/audio/en/pineapple.mp3",
-      "audioVn": "assets/audio/vn/pineapple.mp3",
-      "image": "assets/images/pineapple.jpg"
+      "en": "mango",
+      "vn": "quả xoài",
+      "audioEn": "assets/audio/en/mango.mp3",
+      "audioVn": "assets/audio/vn/mango.mp3",
+      "image": "assets/images/mango.jpg"
     },
     {
       "id": 7,
