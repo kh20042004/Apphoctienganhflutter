@@ -1,8 +1,20 @@
-// lib/screens/home_screen.dart
+// ============================================================================
+// FILE: home_screen.dart
+// MÔ TẢ: Màn hình trang chủ - Dashboard
+// CHỨC NĂNG:
+//   - Hiển thị "Word of the Moment" (từ vựng xoay vòng mỗi 15s)
+//   - Biểu đồ tròn (PieChart) thống kê tiến độ học tập
+//   - Learning Stats (Words Learned, Practice Score, Quiz Score)
+//   - Top Users Leaderboard (Bảng xếp hạng 6 người dùng)
+//   - Auto-rotate từ vựng với Timer
+// ============================================================================
+
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'dart:async';
 
+/// ===== CLASS: HomeScreen =====
+/// StatefulWidget vì cần quản lý Timer và rotate từ vựng
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
